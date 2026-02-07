@@ -26,3 +26,25 @@ subject_count.observe(generate_inputs, names="value")
 run_button = widgets.Button(description="Compute GWA (Multiprocessing)")
 output = widgets.Output()
 
+def run_multiprocessing(b):
+    output.clear_output()
+    grades = [g.value for g in grade_inputs]
+    queue = Queue()
+    processes = []
+    start = time.time()
+    for i in range(3):
+        p = Process(target=compute_gwa_process, args=(i + 1, grades, queue))
+        processes.append(p)
+        p.start()
+    with output:
+        for _ in range(3):
+            print(queue.get())
+    for p in processes:
+        p.join()
+    end = time.time()
+    with output:
+        print(f"Execution Time: {end - start:.4f} seconds")
+
+run_button.on_click(run_multiprocessing)
+
+display(subject_count, grades_box, run_button, output)
